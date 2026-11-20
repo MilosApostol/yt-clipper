@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>YT Clipper · TikTok login</title>
+<style>
+  body{font-family:-apple-system,system-ui,sans-serif;background:#111;color:#eee;display:grid;place-items:center;min-height:100vh;margin:0}
+  .box{max-width:460px;padding:24px;text-align:center} .err{color:#ef4444} .muted{color:#888}
+</style>
+</head>
+<body>
+<div class="box">
+  <h2 id="t">Connecting TikTok to YT Clipper…</h2>
+  <p id="m" class="muted">One moment.</p>
+</div>
+<script>
+// TikTok sends the login code here (it only accepts https addresses).
+// This page only forwards it to the YT Clipper app running on this same computer; nothing is stored.
+(function () {
+  var p = new URLSearchParams(location.search);
+  var code = p.get("code") || "";
+  var state = p.get("state") || "";
+  var err = p.get("error_description") || p.get("error");
+  var t = document.getElementById("t"), m = document.getElementById("m");
+  function fail(title, msg) { t.textContent = title; t.className = "err"; m.textContent = msg; }
+  if (err) return fail("TikTok login was cancelled", String(err).replace(/\+/g, " "));
+  var parts = state.split(".");
+  var port = parseInt(parts[0], 10);
+  if (!code || parts.length !== 2 || !(port > 1023 && port < 65536) || !/^[A-Za-z0-9_-]{16,}$/.test(parts[1]))
+    return fail("Missing login code", "Start again with “Connect TikTok” in YT Clipper.");
+  location.replace("http://127.0.0.1:" + port + "/tt/callback?code=" + encodeURIComponent(code) +
+                   "&state=" + encodeURIComponent(state));
+})();
+</script>
+</body>
+</html>
